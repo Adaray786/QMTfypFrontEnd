@@ -1,0 +1,21 @@
+
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}
+    Home
+{% endblock %}
+
+{% block content %}
+    <!-- Put links to stuff here -->
+    <h3> Dashboard </h3>
+    <p>
+        <a href="/my-memorised-surahs" type="submit" class="btn btn-primary text text-white">View My Memorised Surahs</a>
+        <a href="/friends" type="submit" class="btn btn-primary text text-white">View Friends</a>
+    <p>
+    {% if user.role.roleName == "Admin" %}
+    <h3> Create Questions </h3>
+    <p>
+        <a href="/questions/create" type="submit" class="btn btn-primary text text-white">Create Questions</a>
+    </p>
+    {% endif %}
+{% endblock %}
