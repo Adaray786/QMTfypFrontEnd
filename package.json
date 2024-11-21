@@ -1,0 +1,27 @@
+{
+  "name": "qmtfypfrontend",
+  "version": "1.0.0",
+  "description": "Final Year Project - Qur'an Memorisation Tool Front End NodeJS Application",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build && node dist/app.js",
+    "build": "npx tsc && cp -R views dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "nunjucks": "^3.2.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.0",
+    "@types/node": "^22.9.0",
+    "@types/nunjucks": "^3.2.6",
+    "typescript": "^5.6.3"
+  }
+}

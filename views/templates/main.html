@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+{% set pageTitle %}{% block pageTitle %}Page title{% endblock %}{% endset %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ pageTitle }}</title>
+    <link rel="shortcut icon" type="image/png" href="/static/images/favicon.png"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/styles/kainos.css">
+    <link rel="stylesheet" href="/static/styles/fonts.css">
+    <link rel="stylesheet" href="/static/styles/globalstyles.css">
+</head>
+
+<body>
+    <header class="bg-dark text-light">
+        <div class="container header">
+            <div id="logo-container">
+                <a href="/" alt="Link to home page">
+                    <img id="UoB-logo" src="/static/images/UoB-logo.png" alt="UoB logo" height="75">
+                </a>
+            </div>
+            {% if user %}
+            <div id="navbar-container">
+                <span>Logged in as {{ user.email }} ({{ user.role.roleName }})</span>
+                <a href="/logout">Logout</a>
+            </div>
+            {% endif %}
+            {% if not user %}
+            <div id="navbar-container">
+                <a href="/login">Login</a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+    <main class="container mt-4 mb-1">
+        <h1>{{ pageTitle }}</h1>
+        {% if errorMessage %}
+        <div id="errorMessage" class="alert alert-danger" role="alert" id="errorMessage">
+            {{ errorMessage }}
+        </div>
+        {% endif %}
+        {% if successMessage %}
+        <div id="successMessage" class="alert alert-success" role="alert">
+            {{ successMessage }}
+        </div>
+        {% endif %}
+        {% block content %}
+        Override this
+        {% endblock %}
+        </section>
+    </main>
+    <footer>
+        <div class="footer">
+            <div class="container">
+                <h4>Contact us</h4> 
+                <p>
+                    <b>Address</b>
+                </p>
+                <p>
+                    University of Birmingham,<br>
+                    Edgebaston,<br>
+                    Birmingham,<br>
+                    B15 2TT,<br>
+                    United Kingdom<br>
+                </p>
+                <p>
+                    <b>Telephone</b>
+                </p>
+                <p>+44 789456123</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

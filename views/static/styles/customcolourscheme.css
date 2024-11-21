@@ -1,0 +1,14 @@
+:root {
+    --kainos-blue: #004631; /* Changed to darker green */
+    --kainos-green: #61a83f;
+    --kainos-mid-blue: #003920; /* Changed to another dark green */
+    --kainos-dark-green: #004631;
+    --kainos-grey: #575756;
+    --kainos-orange: #ec6608;
+    --kainos-bright-green: #cfd600;
+    --kainos-bright-blue: #005a2e; /* Changed to a greenish tone */
+}
+
+.bg-kainos-blue {
+    background-color: var(--kainos-blue);
+}
