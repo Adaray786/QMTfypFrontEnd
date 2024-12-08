@@ -1,0 +1,34 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ] # Trigger only on pushes to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Deploy to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+        port: 22
+        source: "dist/*" # Adjust this if the build output is in a different folder
+        target: "/home/ubuntu/QMTfypFrontEnd/" # Adjust this to your frontend directory
+
+    - name: Restart Backend Service and Pull Latest Code
+      run: |
+        echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+        chmod 600 ec2_key.pem
+        ssh -i ec2_key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          cd /home/ubuntu/QMTfypFrontEnd
+          git pull origin main
+          sudo systemctl restart myapp.service
+        EOF
+        rm -f ec2_key.pem
