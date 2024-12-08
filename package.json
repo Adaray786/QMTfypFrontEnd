@@ -6,6 +6,8 @@
   "scripts": {
     "start": "npm run build && node dist/app.js",
     "build": "rimraf dist && npx tsc && cp -R views public dist",
+    "start-prod": "npm run build-prod && node dist/app.js",
+    "build-prod": "npx tsc && cp -R views public dist",
     "test": "echo \"Error: no test specified\""
   },
   "author": "",
