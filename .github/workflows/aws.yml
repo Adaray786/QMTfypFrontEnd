@@ -44,14 +44,14 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         port: 22
         source: "dist/*"
-        target: "/home/ubuntu/FYPFrontEnd/"
+        target: "/home/ubuntu/QMTfypFrontEnd/"
 
     - name: Restart Backend Service and Pull Latest Code
       run: |
         echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
         chmod 600 ec2_key.pem
         ssh -i ec2_key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          cd /home/ubuntu/FYPFrontEnd
+          cd /home/ubuntu/QMTfypFrontEnd
           git pull origin main
           sudo systemctl restart myapp.service
         EOF
