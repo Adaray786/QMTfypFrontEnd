@@ -1,34 +1,62 @@
-name: Deploy to EC2
+name: Node.js CI Build and Deploy
 
 on:
   push:
-    branches: [ "main" ] # Trigger only on pushes to main
+    branches: [ "main" ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    strategy:
+      matrix:
+        node-version: [18.x]
 
-    - name: Deploy to EC2
+    steps:
+      
+uses: actions/checkout@v3
+
+      
+name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+      
+name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |${{ runner.os }}-node-
+
+      
+run: npm install  # Install dependencies
+run: npm run build --if-present
+
+      # Deploy to EC2 instance
+      
+name: Deploy to EC2
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         port: 22
-        source: "dist/*" # Adjust this if the build output is in a different folder
-        target: "/home/ubuntu/QMTfypFrontEnd/" # Adjust this to your frontend directory
+        source: "dist/*"  # Adjust this if your build output is in a different folder
+        target: "/home/ubuntu/FYPFrontEnd/"  # Adjust this to your frontend directory
 
-    - name: Restart Backend Service and Pull Latest Code
+      # Restart your backend service and pull the latest code
+      
+name: Restart Backend Service and Pull Latest Code
       run: |
         echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
         chmod 600 ec2_key.pem
+        # Pull the latest code and restart the service
         ssh -i ec2_key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          cd /home/ubuntu/QMTfypFrontEnd
-          git pull origin main
-          sudo systemctl restart myapp.service
+          cd /home/ubuntu/FYPFrontEnd  # Navigate to your repository's directory
+          git pull origin main    # Pull the latest code from the main branch
+          sudo systemctl restart myapp.service  # Restart the service
         EOF
-        rm -f ec2_key.pem
+        rm -f ec2_key.pem  # Clean up the key file after use
