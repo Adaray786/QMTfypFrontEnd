@@ -1,6 +1,7 @@
 import type { Request, Response } from "express"
 import { Credentials } from "../model/auth";
 import { login, whoami } from "../service/authService";
+import { user } from "../middleware/auth";
 
 
 export class LoginController {

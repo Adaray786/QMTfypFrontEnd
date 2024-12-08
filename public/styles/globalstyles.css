@@ -11,11 +11,18 @@ html, body {
 
 main {
     min-height: calc(100vh - 1rem - 75px);
+    background-image: url('/public/images/background.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 100%;
+    min-height: calc(100vh - 75px - 100px); /* Adjust based on header and footer height */
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 footer {
     background-color: var(--kainos-blue);
-    background-image: url('/static/images/background.png');
     background-repeat: no-repeat;
     background-position: right;
     background-size: contain;
@@ -46,7 +53,7 @@ footer {
     font-weight: 700;
 }
 
-#kainos-logo {
+#UoB-logo {
     margin-left: -8px;
     padding: 0.5rem 0;
 }
