@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ pageTitle }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    <link rel="icon" type="image/x-icon" href="/public/images/quran.ico">
+    <link rel="icon" type="image/x-icon" href="/public/images/">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="/public/styles/customcolourscheme.css">
     <link rel="stylesheet" href="/public/styles/fonts.css">
@@ -20,41 +20,39 @@
         <div class="container header">
             <div id="logo-container">
                 <a href="/" alt="Link to home page">
-                    <img id="UoB-logo" src="/public/images/uoblogo.png" alt="UoB-logo" height="75">
+                    <img id="UoB-logo" src="/public/images/uoblogo.png" alt="UoB logo" height="75">
                 </a>
             </div>
             {% if user %}
             <div id="navbar-container">
-                <span>Logged in as {{ user.username }}</span>
-                <a href="/profile">Profile</a>
+                <span>Logged in as {{ user.email }} ({{ user.role.roleName }})</span>
+                <a href="/logout">Logout</a>
             </div>
             {% endif %}
             {% if not user %}
             <div id="navbar-container">
-                <a href="/login">Logout</a>
+                <a href="/login">Login</a>
             </div>
             {% endif %}
         </div>
     </header>
-    <main class="mt-4 mb-1">
-        <div class="container">
-            <h1>{{ pageTitle }}</h1>
-            {% if errorMessage %}
-            <div id="errorMessage" class="alert alert-danger" role="alert">
-                {{ errorMessage }}
-            </div>
-            {% endif %}
-            {% if successMessage %}
-            <div id="successMessage" class="alert alert-success" role="alert">
-                {{ successMessage }}
-            </div>
-            {% endif %}
-            {% block content %}
-            Override this
-            {% endblock %}
+    <main class="container mt-4 mb-1">
+        <h1>{{ pageTitle }}</h1>
+        {% if errorMessage %}
+        <div id="errorMessage" class="alert alert-danger" role="alert" id="errorMessage">
+            {{ errorMessage }}
         </div>
+        {% endif %}
+        {% if successMessage %}
+        <div id="successMessage" class="alert alert-success" role="alert">
+            {{ successMessage }}
+        </div>
+        {% endif %}
+        {% block content %}
+        Override this
+        {% endblock %}
+        </section>
     </main>
-    
     <footer>
         <div class="footer">
             <div class="container">
