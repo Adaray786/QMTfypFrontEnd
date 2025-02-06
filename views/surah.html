@@ -1,0 +1,23 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}{{ surah.surahNameEnglish }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ surah.surahNameEnglish }} ({{ surah.surahNameArabic }})</h2>
+    <p>Total Ayahs: {{ surah.totalAyahs }}</p>
+
+    <h3>Ayahs</h3>
+    <ul class="list-group">
+        {% if ayahs %}
+            {% for ayah in ayahs %}
+            <li class="list-group-item">
+                <strong>Ayah {{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
+            </li>
+            {% endfor %}
+        {% else %}
+            <li class="list-group-item text-danger">No ayahs found for this Surah.</li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}
