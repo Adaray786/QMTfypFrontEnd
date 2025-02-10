@@ -1,0 +1,91 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}Memorizing Surah{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Memorizing Surah</h2>
+
+    <div id="ayah-container">
+        <h3 id="ayah-number"></h3>
+        <p id="correct-text" class="text-muted"></p>
+
+        <div class="border p-3 rounded mt-3">
+            <h4>Arrange the words:</h4>
+            <div id="scrambled-words" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="border p-3 rounded mt-3">
+            <h4>Your Answer:</h4>
+            <div id="selected-words" class="p-2 border"></div>
+        </div>
+
+        <button id="check-answer" class="btn btn-success mt-3">Check Answer</button>
+        <p id="message" class="mt-2 font-weight-bold"></p>
+    </div>
+</div>
+
+<script>
+    const ayahs = {{ ayahs | dump | safe }};
+    let currentIndex = 0;
+    let shuffledWords = [];
+    let selectedWords = [];
+
+    function loadAyah() {
+        if (currentIndex >= ayahs.length) {
+            document.getElementById("ayah-container").innerHTML = "<h2>🎉 You have completed the Surah!</h2>";
+            return;
+        }
+
+        const ayah = ayahs[currentIndex];
+        document.getElementById("ayah-number").innerText = "Ayah " + ayah.ayahNumber;
+        document.getElementById("correct-text").innerText = ayah.arabicText;
+
+        shuffledWords = ayah.arabicText.split(" ").sort(() => Math.random() - 0.5);
+        selectedWords = [];
+
+        updateUI();
+    }
+
+    function updateUI() {
+        const scrambledContainer = document.getElementById("scrambled-words");
+        scrambledContainer.innerHTML = "";
+        shuffledWords.forEach(word => {
+            let btn = document.createElement("button");
+            btn.innerText = word;
+            btn.classList.add("btn", "btn-outline-primary", "m-1");
+            btn.onclick = () => selectWord(word);
+            scrambledContainer.appendChild(btn);
+        });
+
+        const selectedContainer = document.getElementById("selected-words");
+        selectedContainer.innerText = selectedWords.join(" ");
+    }
+
+    function selectWord(word) {
+        selectedWords.push(word);
+        shuffledWords = shuffledWords.filter(w => w !== word);
+        updateUI();
+    }
+
+    function checkAnswer() {
+        const correctText = ayahs[currentIndex].arabicText;
+        const userText = selectedWords.join(" ");
+
+        if (userText === correctText) {
+            document.getElementById("message").innerText = "✅ Correct! Moving to next Ayah...";
+            setTimeout(() => {
+                currentIndex++;
+                loadAyah();
+                document.getElementById("message").innerText = "";
+            }, 1000);
+        } else {
+            document.getElementById("message").innerText = "❌ Incorrect! Try again.";
+        }
+    }
+
+    document.getElementById("check-answer").addEventListener("click", checkAnswer);
+
+    loadAyah();
+</script>
+{% endblock %}

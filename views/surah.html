@@ -5,19 +5,19 @@
 {% block content %}
 <div class="container">
     <h2>{{ surah.surahNameEnglish }} ({{ surah.surahNameArabic }})</h2>
-    <p>Total Ayahs: {{ surah.totalAyahs }}</p>
+    <p><strong>Total Ayahs:</strong> {{ surah.totalAyahs }}</p>
 
     <h3>Ayahs</h3>
     <ul class="list-group">
-        {% if ayahs %}
-            {% for ayah in ayahs %}
-            <li class="list-group-item">
-                <strong>Ayah {{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
-            </li>
-            {% endfor %}
-        {% else %}
-            <li class="list-group-item text-danger">No ayahs found for this Surah.</li>
-        {% endif %}
+        {% for ayah in ayahs %}
+        <li class="list-group-item">
+            <strong>Ayah {{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
+        </li>
+        {% endfor %}
     </ul>
+
+    <div class="mt-4">
+        <a href="/memorize/{{ surah.surahId }}" class="btn btn-success">Start Memorizing</a>
+    </div>
 </div>
 {% endblock %}
