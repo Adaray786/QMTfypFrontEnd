@@ -4,7 +4,7 @@ import { RegisterController } from "./controller/RegisterController";
 import { Index } from "./controller/indexController";
 import { SurahController } from "./controller/SurahController";
 import { SurahDetailsController } from "./controller/SurahDetailsController";
-import { MemorizeController } from "./controller/MemoriseController";
+import { MemoriseController } from "./controller/MemoriseController";
 
 import { role, login } from "./middleware/auth";
 
@@ -17,7 +17,7 @@ router.post('/register', RegisterController.post)
 router.get('/index', Index.getIndex)
 router.get('/viewSurahs', SurahController.getSurahs);
 router.get('/surah/:id', SurahDetailsController.getSurahDetails);
-router.get('/memorize/:id', MemorizeController.getMemorizePage);
+router.get('/memorise/:id', MemoriseController.getMemorisePage);
 
 router.get('/logout', role("User"), LoginController.logOut)
 
