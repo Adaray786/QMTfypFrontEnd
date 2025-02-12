@@ -10,6 +10,7 @@ export type Role = {
 }
 
 export type User = {
+    userId?: number;
     username: string;
     password: string;
     role: Role;

@@ -11,6 +11,13 @@
             <span>
                 <strong>{{ surah.surahNameEnglish }}</strong> ({{ surah.surahNameArabic }})
             </span>
+            <span>
+                {% if surah.surahId in memorizedSurahs %}
+                    <span class="text-success">&#10004;</span>  <!-- ✔ Green Check if memorized -->
+                {% else %}
+                    <span class="text-danger">&#10008;</span>  <!-- ✖ Red X if not memorized -->
+                {% endif %}
+            </span>
             <a href="/surah/{{ surah.surahId }}" class="btn btn-primary">View</a>
         </li>
         {% endfor %}
