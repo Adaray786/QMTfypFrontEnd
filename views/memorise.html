@@ -27,11 +27,18 @@
             </div>
             <p id="message" class="mt-3 text-center font-weight-bold text-white"></p>
         </div>
+        
+        <!-- Back to Surah Button -->
+        <div class="d-flex justify-content-center mt-3">
+            <button id="back-to-surah" class="btn btn-lg btn-secondary">Back to Surah</button>
+        </div>
     </div>
 </div>
 
 <script>
     const ayahs = {{ ayahs | dump | safe }};
+    const surahId = {{ surahId | dump | safe }};
+
     let currentIndex = 0;
     let shuffledWords = [];
     let selectedWords = [];
@@ -46,7 +53,6 @@
         document.getElementById("ayah-number").innerText = "Ayah " + ayah.ayahNumber;
         document.getElementById("correct-text").innerText = ayah.arabicText;
 
-        // Convert words to array of objects to track duplicates uniquely
         shuffledWords = ayah.arabicText.split(" ").map((word, index) => ({ word, index }))
                          .sort(() => Math.random() - 0.5);
         selectedWords = [];
@@ -110,6 +116,11 @@
             document.getElementById("message").innerText = "❌ Incorrect! Try again.";
         }
     }
+
+    // Handle Back to Surah Button Click
+    document.getElementById("back-to-surah").addEventListener("click", function() {
+        window.location.href = `/surah/${surahId}`;
+    });
 
     document.getElementById("check-answer").addEventListener("click", checkAnswer);
 

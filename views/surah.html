@@ -16,8 +16,12 @@
         {% endfor %}
     </ul>
 
-    <div class="mt-4">
+    <div class="mt-4 d-flex justify-content-between">
+        <!-- Start Memorizing Button -->
         <a href="/memorise/{{ surah.surahId }}" class="btn btn-success">Start Memorising</a>
+
+        <!-- Back to Surah List Button -->
+        <a href="/surahs" class="btn btn-secondary">Back to Surah List</a>
     </div>
 </div>
 {% endblock %}
