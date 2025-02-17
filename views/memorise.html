@@ -38,6 +38,8 @@
 <script>
     const ayahs = {{ ayahs | dump | safe }};
     const surahId = {{ surahId | dump | safe }};
+    const userId = {{ user.userId | dump | safe }}; // Assuming the user object is passed in the template
+    const BACKURL = {{BACKURL | dump | safe }};
 
     let currentIndex = 0;
     let shuffledWords = [];
@@ -45,6 +47,8 @@
 
     function loadAyah() {
         if (currentIndex >= ayahs.length) {
+            // All ayahs completed, update Surah progress
+            updateSurahProgress();
             document.getElementById("ayah-container").innerHTML = "<h2 class='text-center text-white'>🎉 You have completed Surah {{ surahName }}!</h2>";
             return;
         }
@@ -107,13 +111,90 @@
 
         if (userText === correctText) {
             document.getElementById("message").innerText = "✅ Correct! Moving to next Ayah...";
+
+            updateAyahProgress(ayahs[currentIndex].ayahId);  // ✅ Update progress with progressId
+
             setTimeout(() => {
                 currentIndex++;
+                if (currentIndex >= ayahs.length) {
+                    updateSurahProgress();  // ✅ Update Surah progress when all Ayahs are done
+                }
                 loadAyah();
                 document.getElementById("message").innerText = "";
             }, 1000);
         } else {
             document.getElementById("message").innerText = "❌ Incorrect! Try again.";
+        }
+    }
+
+    async function getAyahProgressId(userId, ayahId) {
+        try {
+            const response = await fetch(BACKURL + `/api/ayahProgress/${userId}/${ayahId}`);
+            if (response.ok) {
+                const progressData = await response.json();
+                return progressData.progressId;  // ✅ Return existing progressId
+            } else {
+                return null;  // ✅ Return null if no progress exists
+            }
+        } catch (error) {
+            console.error("Error fetching Ayah progress:", error);
+            return null;
+        }
+    }
+
+    async function updateAyahProgress(ayahId) {
+        const progressId = await getAyahProgressId(userId, ayahId);  // ✅ Get progressId first
+
+        const progressData = {
+            progressId: progressId,  
+            userId: userId,
+            ayahId: ayahId,
+            memorized: true  
+        };
+
+        try {
+            const response = await fetch(BACKURL + `/api/ayahProgress/upsert`, {  
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(progressData)
+            });
+
+            if (!response.ok) {
+                console.error("Failed to update Ayah progress");
+            } else {
+                console.log(`Successfully updated progress for Ayah ID ${ayahId}`);
+            }
+        } catch (error) {
+            console.error("Error updating Ayah progress:", error);
+        }
+    }
+
+    async function updateSurahProgress() {
+        const progressData = {
+            progressId: null,  
+            userId: userId,
+            surahId: surahId,
+            memorized: true  
+        };
+
+        try {
+            const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(progressData)
+            });
+
+            if (!response.ok) {
+                console.error("Failed to update Surah progress");
+            } else {
+                console.log(`Successfully updated progress for Surah ID ${surahId}`);
+            }
+        } catch (error) {
+            console.error("Error updating Surah progress:", error);
         }
     }
 

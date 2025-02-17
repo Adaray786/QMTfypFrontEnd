@@ -14,7 +14,8 @@ export class MemoriseController {
                 surahId, 
                 surahName: surahResponse.data.surahNameEnglish, 
                 ayahs: response.data, 
-                user: req.session.user 
+                user: req.session.user,
+                BACKURL: process.env.BACK_URL 
             });
         } catch (e) {
             console.error("Failed to fetch Ayahs for memorisation:", e);
