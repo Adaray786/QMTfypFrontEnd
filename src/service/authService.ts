@@ -3,9 +3,6 @@ import type { Credentials, Role, User } from "../model/auth";
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { validateUser } from "../validator/userValidator";
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export const login = async function(credentials: Credentials): Promise<string> {
     try {

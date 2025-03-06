@@ -1,4 +1,3 @@
-
 {% extends "templates/main.html" %}
 
 {% block pageTitle %}
@@ -6,12 +5,18 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Put links to stuff here -->
-     <div class="index-page">
-    <h3> Dashboard </h3>
-    <p>
-        <a href="/surahs" type="submit" class="btn btn-primary text text-white">View Surahs</a>
-        <a href="/friends" type="submit" class="btn btn-primary text text-white">View Friends</a>
-    <p>
-</div>
+    <!-- Dashboard Section -->
+    <div class="index-page">
+        <h3> Dashboard </h3>
+
+        <!-- View Surahs Button -->
+        <p>
+            <a href="/surahs" class="btn btn-primary text-white">View Surahs</a>
+        </p>
+
+        <!-- Navigate to Friends Section -->
+        <p>
+            <a href="/friends" class="btn btn-success text-white">Friends</a>
+        </p>
+    </div>
 {% endblock %}

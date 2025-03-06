@@ -1,0 +1,47 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}
+    Find Friends
+{% endblock %}
+
+{% block content %}
+    <h2>Find Friends</h2>
+
+    <!-- Search Form (Now points to `/friends/find/search`) -->
+    <form action="/find/search" method="GET">
+        <input type="text" name="query" placeholder="Search for users" class="form-control" required>
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+    </form>
+
+    <!-- Display Search Results -->
+    {% if results %}
+        <h3>Search Results</h3>
+        {% if results.length > 0 %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in results %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>
+                            <form action="/send" method="POST">
+                                <input type="hidden" name="receiverId" value="{{ user.userId }}">
+                                <button type="submit" class="btn btn-success">Send Request</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="/friends" class="btn btn-secondary">Back to Friends List</a>
+{% endblock %}
