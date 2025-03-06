@@ -28,10 +28,13 @@
                 <span>Logged in as {{ user.email }}</span>
                 <a href="/profile">Profile</a>
             </div>
+            <div id="navbar-container">
+                <a href="/logout">Log Out</a>
+            </div>
             {% endif %}
             {% if not user %}
             <div id="navbar-container">
-                <a href="/login">Logout</a>
+                <a href="/login">Log In</a>
             </div>
             {% endif %}
         </div>

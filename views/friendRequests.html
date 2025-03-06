@@ -1,0 +1,40 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}Friend Requests{% endblock %}
+
+{% block content %}
+<h2>Pending Friend Requests</h2>
+
+{% if friendRequests.length > 0 %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Requester</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in friendRequests %}
+        <tr>
+            <td>{{ request.senderName }}</td>
+            <td>
+                <form action="/accept" method="POST" style="display:inline;">
+                    <input type="hidden" name="requestId" value="{{ request.requestId }}">
+                    <button type="submit" class="btn btn-success">Accept</button>
+                </form>
+                <form action="/reject" method="POST" style="display:inline;">
+                    <input type="hidden" name="requestId" value="{{ request.requestId }}">
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No pending friend requests.</p>
+{% endif %}
+
+<a href="/friends" class="btn btn-secondary">Back to Friends List</a>
+
+{% endblock %}
