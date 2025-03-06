@@ -33,10 +33,9 @@ app.set("view engine", "html");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended : true}))
-app.use(user)
 
 app.use(expressSession({secret : "NOT HARDCODED SECRET", cookie : {maxAge : 600000}}))
-
+app.use(user)
 
 declare module "express-session" {
   interface SessionData {
