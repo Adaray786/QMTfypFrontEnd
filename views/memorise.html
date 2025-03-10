@@ -39,6 +39,7 @@
     const surahId = {{ surahId | dump | safe }};
     const userId = {{ user.userId | dump | safe }}; // Assuming the user object is passed in the template
     const BACKURL = {{BACKURL | dump | safe }};
+    const token = {{token | dump | safe }};
 
     let currentIndex = 0;
     let shuffledWords = [];
@@ -115,9 +116,6 @@
 
             setTimeout(() => {
                 currentIndex++;
-                if (currentIndex >= ayahs.length) {
-                    updateSurahProgress();  // ✅ Update Surah progress when all Ayahs are done
-                }
                 loadAyah();
                 document.getElementById("message").innerText = "";
             }, 1000);
@@ -128,7 +126,11 @@
 
     async function getAyahProgressId(userId, ayahId) {
         try {
-            const response = await fetch(BACKURL + `/api/ayahProgress/${userId}/${ayahId}`);
+            const response = await fetch(BACKURL + `/api/ayahProgress/${userId}/${ayahId}`, {
+            headers: {
+                    Authorization: `Bearer ${token}` 
+                }
+        });
             if (response.ok) {
                 const progressData = await response.json();
                 return progressData.progressId;  // ✅ Return existing progressId
@@ -155,15 +157,16 @@
             const response = await fetch(BACKURL + `/api/ayahProgress/upsert`, {  
                 method: "POST",
                 headers: {
+                    Authorization: `Bearer ${token}` ,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(progressData)
             });
 
-            if (!response.ok) {
-                console.error("Failed to update Ayah progress");
-            } else {
+            if (response.ok) {
                 console.log(`Successfully updated progress for Ayah ID ${ayahId}`);
+            } else {
+                console.error("Failed to update Ayah progress", response);
             }
         } catch (error) {
             console.error("Error updating Ayah progress:", error);
@@ -182,6 +185,7 @@
             const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
                 method: "POST",
                 headers: {
+                    Authorization: `Bearer ${token}` ,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(progressData)
