@@ -4,6 +4,7 @@ import axios from "axios";
 export class MemoriseController {
     public static async getMemorisePage(req: Request, res: Response): Promise<void> {
         const surahId = req.params.id;
+        const token = req.session.token;
 
         try {
             // Fetch Ayahs for the Surah
@@ -11,6 +12,7 @@ export class MemoriseController {
 
             const response = await axios.get(process.env.BACK_URL + `/api/ayahs/surah/${surahId}`);
             res.render("memorise", { 
+                token,
                 surahId, 
                 surahName: surahResponse.data.surahNameEnglish, 
                 ayahs: response.data, 

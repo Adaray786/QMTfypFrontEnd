@@ -5,6 +5,7 @@ export class SurahController {
     public static async getSurahs(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.session.user?.userId;
+            const token = req.session.token;
 
             if (!userId) {
                 res.redirect("/login");
@@ -13,7 +14,9 @@ export class SurahController {
 
              // Fetch Surahs and User Progress
              const surahsResponse = await axios.get(process.env.BACK_URL + `/api/surahs`);
-             const progressResponse = await axios.get(process.env.BACK_URL + `/api/surahProgress/${userId}`);
+             const progressResponse = await axios.get(process.env.BACK_URL + `/api/surahProgress/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+             });
 
             const surahs = surahsResponse.data;
             const progressData = progressResponse.data;

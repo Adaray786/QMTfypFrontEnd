@@ -5,6 +5,7 @@ export class SurahDetailsController {
     public static async getSurahDetails(req: Request, res: Response): Promise<void> {
         const surahId = req.params.id;
         const userId = req.session.user?.userId;
+        const token = req.session.token;
 
         try {
             const surahResponse = await axios.get(process.env.BACK_URL + `/api/surahs/${surahId}`);
@@ -15,7 +16,9 @@ export class SurahDetailsController {
 
             if (userId) {
                 // Fetch user's memorized Ayahs
-                const ayahProgressResponse = await axios.get(process.env.BACK_URL + `/api/ayahProgress/${userId}/surah/${surahId}`);
+                const ayahProgressResponse = await axios.get(process.env.BACK_URL + `/api/ayahProgress/${userId}/surah/${surahId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                 });
 
                 // Ensure data is an array before filtering
                 const progressData = Array.isArray(ayahProgressResponse.data) ? ayahProgressResponse.data : [];
