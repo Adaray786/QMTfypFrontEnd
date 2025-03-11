@@ -5,37 +5,94 @@
 {% endblock %}
 
 {% block content %}
-        <main class="container mt-4">
-            <section id="form" class="bg-light py-5">
-                <div class="container">
-                    <form action="/register" method="post">
-                        {% if errormessage %}
-                        <div class="alert alert-danger" id="invalid-user-register" role="alert">
-                            {{ errormessage }}
-                        </div>
-                        {% endif %}
-                        <div class="form-group">
-                            <label for="username">Email</label>
-                            <input type="text" id="username" name="username" class="form-control" value="{{ username }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" name="password" class="form-control" value="{{ password }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="role">Role</label>
-                            <select id="role" name="role" class="form-control" required>
-                                {% for r in roles %}
-                                <option value="{{ r.roleID }}" {% if role == r.roleID %}selected{% endif %}>{{ r.role_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" id="submit" class="btn btn-primary">Submit</button>
-                    </form>
-                    <div class="alert alert-dark mt-3" role="alert">
-                        If you already have an account, please <a href="/login">login</a>.
+    <section id="form" class="bg-light py-5">
+        <div class="container">
+            <form action="/register" method="post" onsubmit="return validatePasswords()">
+                {% if errormessage %}
+                <div class="alert alert-danger" id="invalid-user-register" role="alert">
+                    {{ errormessage }}
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="username">Email</label>
+                    <input type="text" id="username" name="username" class="form-control" value="{{ username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password', 'togglePasswordIcon')">
+                            <i id="togglePasswordIcon" class="fas fa-eye"></i>
+                        </button>
                     </div>
                 </div>
-            </section>
-        </main>
-        {% endblock %}
+
+                <div class="form-group">
+                    <label for="repeat-password">Repeat Password</label>
+                    <div class="input-group">
+                        <input type="password" id="repeat-password" name="repeat-password" class="form-control" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('repeat-password', 'toggleRepeatPasswordIcon')">
+                            <i id="toggleRepeatPasswordIcon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group" hidden>
+                    <label for="role">Role</label>
+                    <select id="role" name="role" class="form-control" required>
+                        {% for r in roles %}
+                            <option value="{{ r.roleID }}" 
+                                {% if role == r.roleID or r.role_name == "User" %} selected {% endif %}>
+                                {{ r.role_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" id="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+            <div class="alert alert-dark mt-3" role="alert">
+                If you already have an account, please <a href="/login">login</a>.
+            </div>
+
+            <div id="password-error" class="alert alert-danger mt-3" style="display: none;">
+                Passwords do not match! Please try again.
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function validatePasswords() {
+            const password = document.getElementById("password").value;
+            const repeatPassword = document.getElementById("repeat-password").value;
+            const errorDiv = document.getElementById("password-error");
+
+            if (password !== repeatPassword) {
+                errorDiv.style.display = "block";
+                return false;
+            } else {
+                errorDiv.style.display = "none"; 
+                return true;
+            }
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash"); 
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");  
+            }
+        }
+    </script>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+{% endblock %}
