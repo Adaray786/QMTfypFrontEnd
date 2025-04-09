@@ -11,6 +11,7 @@
         <div id="ayah-container">
             <h3 id="ayah-number" class="text-center text-white"></h3>
             <p id="correct-text" class="text-muted text-center text-light"></p>
+            <div id="score-animation" class="score-animation"></div>
 
             <div class="border p-3 rounded mt-3 bg-light">
                 <h4 class="text-dark">Arrange the words:</h4>
@@ -34,12 +35,58 @@
     </div>
 </div>
 
+<style>
+    .score-animation {
+        position: fixed;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #004631;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes scorePath {
+        0% {
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(0, -100vh);
+            opacity: 0;
+        }
+    }
+
+    @keyframes scorePulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+            color: #00ff00;
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .score-animation.show {
+        animation: scorePath 1.5s ease-out forwards;
+    }
+
+    .score-pulse {
+        animation: scorePulse 0.5s ease-in-out;
+    }
+</style>
+
 <script>
     const ayahs = {{ ayahs | dump | safe }};
     const surahId = {{ surahId | dump | safe }};
-    const userId = {{ user.userId | dump | safe }}; // Assuming the user object is passed in the template
+    const userId = {{ user.userId | dump | safe }};
     const BACKURL = {{BACKURL | dump | safe }};
     const token = {{token | dump | safe }};
+    let currentScore = {{ userScore | dump | safe }};
 
     let currentIndex = 0;
     let shuffledWords = [];
@@ -105,14 +152,44 @@
         }
     }
 
-    function checkAnswer() {
+    async function showScoreAnimation(scoreToAdd) {
+        const checkAnswerButton = document.getElementById("check-answer");
+        const buttonRect = checkAnswerButton.getBoundingClientRect();
+        const scoreElement = document.querySelector("#navbar-container span:first-child strong");
+        
+        const animationElement = document.getElementById("score-animation");
+        animationElement.textContent = `+${scoreToAdd}`;
+        animationElement.style.left = `${buttonRect.left + buttonRect.width/2}px`;
+        animationElement.style.top = `${buttonRect.top}px`;
+        animationElement.classList.add("show");
+        
+        // Add pulse animation to the score
+        scoreElement.classList.add("score-pulse");
+        
+        // Update the score in the navbar after the pulse animation
+        setTimeout(() => {
+            currentScore += scoreToAdd;
+            scoreElement.textContent = currentScore;
+            scoreElement.classList.remove("score-pulse");
+        }, 500);
+
+        // Remove the animation class after it completes
+        setTimeout(() => {
+            animationElement.classList.remove("show");
+        }, 1500);
+    }
+
+    async function checkAnswer() {
         const correctText = ayahs[currentIndex].arabicText;
         const userText = selectedWords.map(w => w.word).join(" ");
 
         if (userText === correctText) {
             document.getElementById("message").innerText = "✅ Correct! Moving to next Ayah...";
 
-            updateAyahProgress(ayahs[currentIndex].ayahId);  // ✅ Update progress with progressId
+            // Calculate score based on number of words
+            const wordCount = correctText.split(" ").length;
+            await showScoreAnimation(wordCount);
+            await updateAyahProgress(ayahs[currentIndex].ayahId);
 
             setTimeout(() => {
                 currentIndex++;
@@ -127,15 +204,15 @@
     async function getAyahProgressId(userId, ayahId) {
         try {
             const response = await fetch(BACKURL + `/api/ayahProgress/${userId}/${ayahId}`, {
-            headers: {
+                headers: {
                     Authorization: `Bearer ${token}` 
                 }
-        });
+            });
             if (response.ok) {
                 const progressData = await response.json();
-                return progressData.progressId;  // ✅ Return existing progressId
+                return progressData.progressId;
             } else {
-                return null;  // ✅ Return null if no progress exists
+                return null;
             }
         } catch (error) {
             console.error("Error fetching Ayah progress:", error);
@@ -144,7 +221,7 @@
     }
 
     async function updateAyahProgress(ayahId) {
-        const progressId = await getAyahProgressId(userId, ayahId);  // ✅ Get progressId first
+        const progressId = await getAyahProgressId(userId, ayahId);
 
         const progressData = {
             progressId: progressId,  
@@ -157,7 +234,7 @@
             const response = await fetch(BACKURL + `/api/ayahProgress/upsert`, {  
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}` ,
+                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(progressData)
@@ -185,7 +262,7 @@
             const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}` ,
+                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(progressData)

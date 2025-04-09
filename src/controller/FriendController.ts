@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { FriendService } from "../service/friendService";
+import axios from "axios";
 
 export class FriendController {
 
@@ -10,10 +11,23 @@ export class FriendController {
             if (!token) return res.redirect("/login");
 
             const friends = await FriendService.getFriends(token);
-            res.render("friends", { user: req.session.user, friends });
+            const scoreResponse = await axios.get(process.env.BACK_URL + `/api/scores/userScore`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const userScore = scoreResponse.data;
+
+            res.render("friends", { 
+                user: req.session.user, 
+                friends,
+                userScore 
+            });
         } catch (error) {
             console.error("Error fetching friends:", error);
-            res.status(500).send("Error fetching friends.");
+            res.status(500).render("error", { 
+                message: "Error fetching friends",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -24,10 +38,23 @@ export class FriendController {
             if (!token) return res.redirect("/login");
 
             const friendRequests = await FriendService.getFriendRequests(token);
-            res.render("friendRequests", { user: req.session.user, friendRequests });
+            const scoreResponse = await axios.get(process.env.BACK_URL + `/api/scores/userScore`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const userScore = scoreResponse.data;
+
+            res.render("friendRequests", { 
+                user: req.session.user, 
+                friendRequests,
+                userScore 
+            });
         } catch (error) {
             console.error("Error fetching friend requests:", error);
-            res.status(500).send("Error fetching friend requests.");
+            res.status(500).render("error", { 
+                message: "Error fetching friend requests",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -42,7 +69,11 @@ export class FriendController {
             res.redirect("/friends");
         } catch (error) {
             console.error("Error sending friend request:", error);
-            res.status(500).send("Error sending friend request.");
+            res.status(500).render("error", { 
+                message: "Error sending friend request",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -57,7 +88,11 @@ export class FriendController {
             res.redirect("/friends");
         } catch (error) {
             console.error("Error accepting friend request:", error);
-            res.status(500).send("Error accepting friend request.");
+            res.status(500).render("error", { 
+                message: "Error accepting friend request",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -72,7 +107,11 @@ export class FriendController {
             res.redirect("/friends");
         } catch (error) {
             console.error("Error rejecting friend request:", error);
-            res.status(500).send("Error rejecting friend request.");
+            res.status(500).render("error", { 
+                message: "Error rejecting friend request",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -87,7 +126,11 @@ export class FriendController {
             res.redirect("/friends");
         } catch (error) {
             console.error("Error removing friend:", error);
-            res.status(500).send("Error removing friend.");
+            res.status(500).render("error", { 
+                message: "Error removing friend",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 
@@ -99,11 +142,23 @@ export class FriendController {
 
             const { query } = req.query;
             const results = await FriendService.searchUsers(token, query as string);
+            const scoreResponse = await axios.get(process.env.BACK_URL + `/api/scores/userScore`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const userScore = scoreResponse.data;
 
-            res.render("findFriends", { user: req.session.user, results });
+            res.render("findFriends", { 
+                user: req.session.user, 
+                results,
+                userScore 
+            });
         } catch (error) {
             console.error("Error searching users:", error);
-            res.status(500).send("Error searching users.");
+            res.status(500).render("error", { 
+                message: "Error searching users",
+                user: req.session.user,
+                userScore: "Error loading score"
+            });
         }
     }
 }
