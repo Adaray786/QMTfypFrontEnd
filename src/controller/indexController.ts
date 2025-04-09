@@ -7,22 +7,34 @@ export namespace Index {
         try {
             const token = req.session.token;
             let userScore = 0; // Default score
+            let surahProgress = [];
 
             if (token) {
-                const response = await axios.get(process.env.BACK_URL + `/api/scores/userScore`, {
+                // Fetch user score
+                const scoreResponse = await axios.get(process.env.BACK_URL + `/api/scores/userScore`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
+                userScore = scoreResponse.data;
 
-                userScore = response.data;
+                // Fetch surah progress
+                const progressResponse = await axios.get(process.env.BACK_URL + `/api/surahProgress/${req.session.user?.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                surahProgress = progressResponse.data;
             }
 
             res.render("index", { 
                 user: req.session.user, 
                 userScore,
+                surahProgress
             });
         } catch (error) {
-            console.error("Error fetching user score:", error);
-            res.render("index", { user: req.session.user, userScore: "Error loading score" });
+            console.error("Error fetching user data:", error);
+            res.render("index", { 
+                user: req.session.user, 
+                userScore: "Error loading score",
+                surahProgress: []
+            });
         }
     }
 }
