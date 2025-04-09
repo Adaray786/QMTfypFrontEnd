@@ -9,17 +9,134 @@
     <div class="index-page">
         <h3> Dashboard </h3>
 
-        <!-- View Surahs Button -->
+        <div class="row">
+            <!-- Left Column - Buttons -->
+            <div class="col-md-6">
+                <div class="d-grid gap-3">
+                    <a href="/surahs" class="btn btn-primary text-white btn-lg">View Surahs</a>
+                    <a href="/friends" class="btn btn-success text-white btn-lg">Friends</a>
+                </div>
+            </div>
 
-        <p><strong>Your Score:</strong> <span id="userScore">{{ userScore }}</span></p>
-
-        <p>
-            <a href="/surahs" class="btn btn-primary text-white">View Surahs</a>
-        </p>
-
-        <!-- Navigate to Friends Section -->
-        <p>
-            <a href="/friends" class="btn btn-success text-white">Friends</a>
-        </p>
+            <!-- Right Column - Progress Chart -->
+            <div class="col-md-6">
+                <div class="card" style="background-color: #004631; border-radius: 20px; opacity: 0.9;">
+                    <div class="card-body">
+                        <h5 class="card-title text-white">Your Qur'an Memorisation Progress</h5>
+                        <div class="chart-container" style="position: relative; height:200px; width:200px; margin: 0 auto; border: 3px solid black; border-radius: 15px; overflow: hidden; background-color: rgba(0, 70, 49, 0.2);">
+                            <canvas id="progressChart" style="background-color: rgba(255, 255, 255, 0.9);"></canvas>
+                        </div>
+                        <div id="progressStats" class="text-center mt-3 text-white">
+                            <h6>Total Surahs Memorized: <span id="memorizedCount">0</span>/114</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Progress Chart Script -->
+    <script>
+        // Function to calculate statistics
+        function calculateStats(progressData) {
+            // Debug the incoming data
+            console.log('Raw progress data:', progressData);
+            
+            // Ensure we have valid data
+            if (!Array.isArray(progressData)) {
+                console.error('Progress data is not an array');
+                return { memorizedSurahs: 0, memorizationPercentage: 0 };
+            }
+
+            // Count unique memorized surahs
+            const memorizedSurahs = new Set(
+                progressData
+                    .filter(surah => surah.memorized)
+                    .map(surah => surah.surahId)
+            ).size;
+
+            const totalSurahs = 114;
+            const memorizationPercentage = (memorizedSurahs / totalSurahs) * 100;
+
+            console.log('Calculated stats:', {
+                memorizedSurahs,
+                totalSurahs,
+                memorizationPercentage
+            });
+
+            return {
+                memorizedSurahs,
+                memorizationPercentage
+            };
+        }
+
+        // Function to initialize the chart
+        function initializeChart() {
+            const progressData = {{ surahProgress | dump | safe }};
+            
+            if (!progressData || !Array.isArray(progressData)) {
+                console.error('Invalid progress data');
+                return;
+            }
+
+            const stats = calculateStats(progressData);
+            
+            // Update stats display
+            document.getElementById('memorizedCount').textContent = stats.memorizedSurahs;
+
+            const canvas = document.getElementById('progressChart');
+            if (!canvas) {
+                console.error('Canvas element not found');
+                return;
+            }
+
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Memorized', 'Remaining'],
+                    datasets: [{
+                        data: [stats.memorizationPercentage, 100 - stats.memorizationPercentage],
+                        backgroundColor: [
+                            'rgba(0, 70, 49, 0.95)', // 95% opacity green for memorized
+                            'rgba(0, 70, 49, 0.05)'  // Very light green for remaining
+                        ],
+                        borderColor: [
+                            'rgba(0, 70, 49, 1)', // Solid green border for memorized
+                            'rgba(0, 70, 49, 0.3)' // Light green border for remaining
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize the chart when the page loads
+        document.addEventListener('DOMContentLoaded', initializeChart);
+    </script>
 {% endblock %}

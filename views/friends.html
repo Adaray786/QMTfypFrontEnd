@@ -16,7 +16,7 @@
     <tbody>
         {% for friend in friends %}
         <tr>
-            <td>{{ friend.friendName }}</td>
+            <td>{{ friend.friendName.split('@')[0] }}</td>
             <td>
                 <form action="/remove" method="POST">
                     <input type="hidden" name="friendId" value="{{ friend.friendId }}">

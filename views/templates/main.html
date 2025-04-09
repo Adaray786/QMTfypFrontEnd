@@ -16,7 +16,7 @@
 </head>
 
 <body>
-    <header class="bg-dark text-light">
+    <header class="bg-kainos-blue text-light">
         <div class="container header">
             <div id="logo-container">
                 <a href="/index" alt="Link to home page">
@@ -25,8 +25,9 @@
             </div>
             {% if user %}
             <div id="navbar-container">
-                <span>Logged in as {{ user.email }}</span>
-                <a href="/profile">Profile</a>
+                <span class="me-3">Score: <strong>{{ userScore }}</strong></span>
+                <span class="me-3">Logged in as {{ user.email.split('@')[0] }}</span>
+                <a href="/profile" class="me-3">Profile</a>
                 <a href="/logout">Log Out</a>
             </div>
             {% endif %}

@@ -16,7 +16,7 @@
     <tbody>
         {% for request in friendRequests %}
         <tr>
-            <td>{{ request.senderName }}</td>
+            <td>{{ request.senderName.split('@')[0] }}</td>
             <td>
                 <form action="/accept" method="POST" style="display:inline;">
                     <input type="hidden" name="requestId" value="{{ request.requestId }}">

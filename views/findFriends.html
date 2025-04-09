@@ -27,7 +27,7 @@
                 <tbody>
                     {% for user in results %}
                     <tr>
-                        <td>{{ user.name }}</td>
+                        <td>{{ user.name.split('@')[0] }}</td>
                         <td>
                             <form action="/send" method="POST">
                                 <input type="hidden" name="receiverId" value="{{ user.userId }}">
