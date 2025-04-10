@@ -6,7 +6,8 @@ import { SurahController } from "./controller/SurahController";
 import { SurahDetailsController } from "./controller/SurahDetailsController";
 import { MemoriseController } from "./controller/MemoriseController";
 import { FriendController } from "./controller/FriendController";
-
+import { ChallengeController } from "./controller/ChallengeController";
+import { SendChallengeController } from "./controller/SendChallengeController";
 
 import { role, login } from "./middleware/auth";
 
@@ -20,6 +21,8 @@ router.get('/index', login, Index.getIndex)
 router.get('/surahs', login, SurahController.getSurahs);
 router.get('/surah/:id', login, SurahDetailsController.getSurahDetails);
 router.get('/memorise/:id', login, MemoriseController.getMemorisePage);
+router.get('/challenges', login, ChallengeController.getChallenges);
+router.get('/send-challenge', login, SendChallengeController.getSendChallenge);
 
 router.get("/friends", login, FriendController.getFriends);
 router.get("/requests", login, FriendController.getFriendRequests);

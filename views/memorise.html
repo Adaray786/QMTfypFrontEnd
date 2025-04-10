@@ -87,11 +87,63 @@
     const BACKURL = {{BACKURL | dump | safe }};
     const token = {{token | dump | safe }};
     let currentScore = {{ userScore | dump | safe }};
+    let activeChallenge = null;
+
+    // Check for active challenges when page loads
+    async function checkActiveChallenge() {
+        try {
+            const response = await fetch(BACKURL + `/api/challenges/active/${surahId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                activeChallenge = await response.json();
+                if (activeChallenge) {
+                    // Show challenge notification
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-warning text-center mb-3';
+                    notification.innerHTML = `You are in an active challenge for this surah with ${activeChallenge.otherUserEmail.split('@')[0]}!`;
+                    document.querySelector('.container').insertBefore(notification, document.querySelector('#ayah-container'));
+                }
+            }
+        } catch (error) {
+            console.error('Error checking active challenges:', error);
+        }
+    }
+
+    // Function to mark challenge as won
+    async function winChallenge() {
+        if (!activeChallenge) return;
+        
+        try {
+            const response = await fetch(BACKURL + `/api/challenges/win/${activeChallenge.challengeId}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const message = await response.text();
+                // Show success message
+                const successNotification = document.createElement('div');
+                successNotification.className = 'alert alert-success text-center mb-3';
+                successNotification.innerHTML = `🎉 ${message}`;
+                document.querySelector('.container').insertBefore(successNotification, document.querySelector('#ayah-container'));
+            } else {
+                const error = await response.text();
+                console.error('Error winning challenge:', error);
+            }
+        } catch (error) {
+            console.error('Error winning challenge:', error);
+        }
+    }
 
     let currentIndex = 0;
     let shuffledWords = [];
     let selectedWords = [];
-    let isFirstAttempt = true; // Track if this is the first attempt for the current ayah
+    let isFirstAttempt = true;
 
     function loadAyah() {
         if (currentIndex >= ayahs.length) {
@@ -197,14 +249,72 @@
                 await updateAyahProgress(ayahs[currentIndex].ayahId);
             }
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 currentIndex++;
-                loadAyah();
+                if (currentIndex >= ayahs.length) {
+                    // Check if all ayahs are memorized before completing the challenge
+                    const allMemorized = await checkAllAyahsMemorized();
+                    if (allMemorized) {
+                        // All ayahs completed and memorized
+                        // Update surah progress first
+                        await updateSurahProgress();
+                        
+                        // Then handle challenge completion if there is an active challenge
+                        if (activeChallenge) {
+                            await winChallenge();
+                        }
+                        
+                        // Show completion message
+                        document.getElementById("ayah-container").innerHTML = `
+                            <div class="text-center">
+                                <h2>Congratulations! 🎉</h2>
+                                <p>You have completed memorizing this surah!</p>
+                                <button class="btn btn-primary" onclick="window.location.href='/surahs'">Return to Surahs</button>
+                            </div>
+                        `;
+                    } else {
+                        // Not all ayahs are memorized yet
+                        document.getElementById("message").innerText = "Please complete all ayahs to finish the challenge!";
+                        currentIndex = 0; // Reset to start
+                        loadAyah();
+                    }
+                } else {
+                    loadAyah();
+                }
                 document.getElementById("message").innerText = "";
             }, 1000);
         } else {
             document.getElementById("message").innerText = "❌ Incorrect! Try again.";
-            isFirstAttempt = false; // Mark that this wasn't the first attempt
+            isFirstAttempt = false;
+        }
+    }
+
+    // Function to check if all ayahs are memorized
+    async function checkAllAyahsMemorized() {
+        try {
+            const progressResponse = await fetch(BACKURL + `/api/ayahProgress/${userId}/surah/${surahId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            
+            if (!progressResponse.ok) {
+                console.error("Failed to fetch ayah progress");
+                return false;
+            }
+            
+            const progressData = await progressResponse.json();
+            const memorizedAyahIds = new Set(
+                progressData
+                    .filter(progress => progress.memorized)
+                    .map(progress => progress.ayahId)
+            );
+            
+            // Check if all ayahs in the current surah are memorized
+            return ayahs.every(ayah => memorizedAyahIds.has(ayah.ayahId));
+        } catch (error) {
+            console.error("Error checking ayah progress:", error);
+            return false;
         }
     }
 
@@ -326,6 +436,10 @@
 
     document.getElementById("check-answer").addEventListener("click", checkAnswer);
 
-    loadAyah();
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        checkActiveChallenge();
+        loadAyah();
+    });
 </script>
 {% endblock %}
