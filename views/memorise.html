@@ -97,7 +97,7 @@
         if (currentIndex >= ayahs.length) {
             // All ayahs completed, update Surah progress
             updateSurahProgress();
-            document.getElementById("ayah-container").innerHTML = "<h2 class='text-center text-white'>🎉 You have completed Surah {{ surahName }}!</h2>";
+            document.getElementById("ayah-container").innerHTML = "<h2 class='text-center text-white'>�� You have completed all ayahs in Surah {{ surahName }}!</h2>";
             return;
         }
 
@@ -258,27 +258,61 @@
     }
 
     async function updateSurahProgress() {
-        const progressData = {
-            progressId: null,  
-            userId: userId,
-            surahId: surahId,
-            memorized: true  
-        };
-
         try {
-            const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(progressData)
-            });
+            // First, fetch all ayahs for this surah
+            const ayahsResponse = await fetch(BACKURL + `/api/ayahs/surah/${surahId}`);
+            if (!ayahsResponse.ok) {
+                console.error("Failed to fetch ayahs for surah");
+                return;
+            }
+            const allAyahs = await ayahsResponse.json();
 
-            if (!response.ok) {
-                console.error("Failed to update Surah progress");
+            // Then, fetch all memorized ayahs for this surah
+            const progressResponse = await fetch(BACKURL + `/api/ayahProgress/${userId}/surah/${surahId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (!progressResponse.ok) {
+                console.error("Failed to fetch ayah progress");
+                return;
+            }
+            const progressData = await progressResponse.json();
+
+            // Create a set of memorized ayah IDs
+            const memorizedAyahIds = new Set(
+                progressData
+                    .filter(progress => progress.memorized)
+                    .map(progress => progress.ayahId)
+            );
+
+            // Check if all ayahs are memorized
+            const allAyahsMemorized = allAyahs.every(ayah => memorizedAyahIds.has(ayah.ayahId));
+
+            if (allAyahsMemorized) {
+                const progressData = {
+                    progressId: null,  
+                    userId: userId,
+                    surahId: surahId,
+                    memorized: true  
+                };
+
+                const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(progressData)
+                });
+
+                if (!response.ok) {
+                    console.error("Failed to update Surah progress");
+                } else {
+                    console.log(`Successfully updated progress for Surah ID ${surahId}`);
+                }
             } else {
-                console.log(`Successfully updated progress for Surah ID ${surahId}`);
+                console.log("Not all ayahs are memorized yet");
             }
         } catch (error) {
             console.error("Error updating Surah progress:", error);
