@@ -91,6 +91,7 @@
     let currentIndex = 0;
     let shuffledWords = [];
     let selectedWords = [];
+    let isFirstAttempt = true; // Track if this is the first attempt for the current ayah
 
     function loadAyah() {
         if (currentIndex >= ayahs.length) {
@@ -107,6 +108,7 @@
         shuffledWords = ayah.arabicText.split(" ").map((word, index) => ({ word, index }))
                          .sort(() => Math.random() - 0.5);
         selectedWords = [];
+        isFirstAttempt = true; // Reset first attempt flag for new ayah
 
         updateUI();
     }
@@ -189,7 +191,11 @@
             // Calculate score based on number of words
             const wordCount = correctText.split(" ").length;
             await showScoreAnimation(wordCount);
-            await updateAyahProgress(ayahs[currentIndex].ayahId);
+
+            // Only update progress if it was the first attempt
+            if (isFirstAttempt) {
+                await updateAyahProgress(ayahs[currentIndex].ayahId);
+            }
 
             setTimeout(() => {
                 currentIndex++;
@@ -198,6 +204,7 @@
             }, 1000);
         } else {
             document.getElementById("message").innerText = "❌ Incorrect! Try again.";
+            isFirstAttempt = false; // Mark that this wasn't the first attempt
         }
     }
 
