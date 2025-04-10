@@ -1,0 +1,241 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}Challenges{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Challenges</h1>
+
+    <div class="d-flex justify-content-end mb-4">
+        <a href="/send-challenge" class="btn btn-primary">Send Challenge</a>
+    </div>
+
+    <!-- Pending Challenges -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Pending Challenges</h2>
+        </div>
+        <div class="card-body">
+            <div id="pendingChallenges">
+                <!-- Challenges will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Challenges -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Active Challenges</h2>
+        </div>
+        <div class="card-body">
+            <div id="activeChallenges">
+                <!-- Active challenges will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Challenges -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Completed Challenges</h2>
+        </div>
+        <div class="card-body">
+            <div id="completedChallenges">
+                <!-- Completed challenges will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BACKURL = {{ BACKURL | dump | safe }};
+    const token = {{ token | dump | safe }};
+
+    async function loadChallenges() {
+        try {
+            // Load pending challenges
+            const pendingResponse = await fetch(BACKURL + '/api/challenges/requests', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (pendingResponse.ok) {
+                const pendingChallenges = await pendingResponse.json();
+                // Fetch surah details for each challenge
+                const challengesWithDetails = await Promise.all(pendingChallenges.map(async (challenge) => {
+                    // Fetch surah details
+                    const surahResponse = await fetch(BACKURL + `/api/surahs/${challenge.surahId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    const surahData = await surahResponse.json();
+                    
+                    return {
+                        ...challenge,
+                        senderName: challenge.senderEmail.split('@')[0], // Extract username from email
+                        surahNameEnglish: surahData.surahNameEnglish,
+                        surahNameArabic: surahData.surahNameArabic
+                    };
+                }));
+                displayPendingChallenges(challengesWithDetails);
+            }
+
+            // Load active challenges
+            const activeResponse = await fetch(BACKURL + '/api/challenges/active', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (activeResponse.ok) {
+                const activeChallenges = await activeResponse.json();
+                // Fetch surah details for each active challenge
+                const activeChallengesWithDetails = await Promise.all(activeChallenges.map(async (challenge) => {
+                    // Fetch surah details
+                    const surahResponse = await fetch(BACKURL + `/api/surahs/${challenge.surahId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    const surahData = await surahResponse.json();
+                    
+                    return {
+                        ...challenge,
+                        opponentName: challenge.otherUserEmail.split('@')[0], // Extract username from email
+                        surahNameEnglish: surahData.surahNameEnglish,
+                        surahNameArabic: surahData.surahNameArabic
+                    };
+                }));
+                displayActiveChallenges(activeChallengesWithDetails);
+            }
+
+            // Load completed challenges
+            const completedResponse = await fetch(BACKURL + '/api/challenges/completed', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (completedResponse.ok) {
+                const completedChallenges = await completedResponse.json();
+                // Fetch additional details for each completed challenge
+                const completedChallengesWithDetails = await Promise.all(completedChallenges.map(async (challenge) => {
+                    // Fetch surah details
+                    const surahResponse = await fetch(BACKURL + `/api/surahs/${challenge.surahId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    const surahData = await surahResponse.json();
+                    
+                    // Determine the other user's email
+                    const otherUserEmail = challenge.otherUserEmail;
+                    const otherUserName = otherUserEmail.split('@')[0];
+                    
+                    // Determine if current user won
+                    const currentUserId = {{ user.userId | dump | safe }};
+                    const isWinner = challenge.winnerId === currentUserId;
+                    
+                    return {
+                        ...challenge,
+                        opponentName: otherUserName,
+                        surahNameEnglish: surahData.surahNameEnglish,
+                        surahNameArabic: surahData.surahNameArabic,
+                        isWinner: isWinner
+                    };
+                }));
+                displayCompletedChallenges(completedChallengesWithDetails);
+            }
+        } catch (error) {
+            console.error('Error loading challenges:', error);
+        }
+    }
+
+    function displayPendingChallenges(challenges) {
+        const container = document.getElementById('pendingChallenges');
+        if (challenges.length === 0) {
+            container.innerHTML = '<p>No pending challenges</p>';
+            return;
+        }
+
+        container.innerHTML = challenges.map(challenge => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Challenge from ${challenge.senderName || `User ${challenge.senderId}`}</h5>
+                    <p class="card-text">Surah: ${challenge.surahNameEnglish || `Surah ${challenge.surahId}`} (${challenge.surahNameArabic || ''})</p>
+                    <p class="card-text text-muted">Sent at: ${new Date(challenge.sentAt).toLocaleString()}</p>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="handleChallengeResponse(${challenge.requestId}, 'accept')">Accept</button>
+                        <button class="btn btn-danger" onclick="handleChallengeResponse(${challenge.requestId}, 'reject')">Reject</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function displayActiveChallenges(challenges) {
+        const container = document.getElementById('activeChallenges');
+        if (challenges.length === 0) {
+            container.innerHTML = '<p>No active challenges</p>';
+            return;
+        }
+
+        container.innerHTML = challenges.map(challenge => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Challenge with ${challenge.opponentName || `User ${challenge.user1Id === challenge.userId ? challenge.user2Id : challenge.user1Id}`}</h5>
+                    <p class="card-text">Surah: ${challenge.surahNameEnglish || `Surah ${challenge.surahId}`} (${challenge.surahNameArabic || ''})</p>
+                    <p class="card-text text-muted">Started at: ${new Date(challenge.startedAt).toLocaleString()}</p>
+                    <a href="/memorise/${challenge.surahId}" class="btn btn-primary">Start Memorizing</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function displayCompletedChallenges(challenges) {
+        const container = document.getElementById('completedChallenges');
+        if (challenges.length === 0) {
+            container.innerHTML = '<p>No completed challenges</p>';
+            return;
+        }
+
+        container.innerHTML = challenges.map(challenge => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Challenge with ${challenge.opponentName}</h5>
+                    <p class="card-text">Surah: ${challenge.surahNameEnglish} (${challenge.surahNameArabic})</p>
+                    <p class="card-text ${challenge.isWinner ? 'text-success' : 'text-danger'}">
+                        Result: ${challenge.isWinner ? 'You won! 🎉' : 'You lost'}
+                    </p>
+                    <p class="card-text text-muted">
+                        Completed: ${new Date(challenge.completedAt).toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function handleChallengeResponse(requestId, action) {
+        try {
+            const response = await fetch(BACKURL + `/api/challenges/${action}/${requestId}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                loadChallenges(); // Reload all challenges
+            } else {
+                const error = await response.text();
+                alert('Error: ' + error);
+            }
+        } catch (error) {
+            console.error('Error handling challenge response:', error);
+            alert('Error handling challenge response');
+        }
+    }
+
+    // Load challenges when page loads
+    document.addEventListener('DOMContentLoaded', loadChallenges);
+</script>
+{% endblock %} 
