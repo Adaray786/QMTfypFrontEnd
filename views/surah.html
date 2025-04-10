@@ -3,6 +3,19 @@
 {% block pageTitle %}{{ surah.surahNameEnglish }}{% endblock %}
 
 {% block content %}
+<style>
+    .ayah-item {
+        position: relative;
+    }
+    .memorize-btn {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .ayah-item:hover .memorize-btn {
+        opacity: 1;
+    }
+</style>
+
 <div class="container">
     <h2>{{ surah.surahNameEnglish }} ({{ surah.surahNameArabic }})</h2>
     <p><strong>Total Ayahs:</strong> {{ surah.totalAyahs }}</p>
@@ -10,23 +23,26 @@
     <h3>Ayahs</h3>
     <ul class="list-group">
         {% for ayah in ayahs %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <li class="list-group-item ayah-item d-flex justify-content-between align-items-center">
             <span>
                 <strong>Ayah {{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
             </span>
-            <span>
-                {% if ayah.ayahId in memorizedAyahs %}
-                    <span class="text-success">&#10004;</span>  <!-- ✔ Green Check if memorized -->
-                {% else %}
-                    <span class="text-danger">&#10008;</span>  <!-- ✖ Red X if not memorized -->
-                {% endif %}
-            </span>
+            <div class="d-flex align-items-center">
+                <span class="me-3">
+                    {% if ayah.ayahId in memorizedAyahs %}
+                        <span class="text-success">&#10004;</span>  <!-- ✔ Green Check if memorized -->
+                    {% else %}
+                        <span class="text-danger">&#10008;</span>  <!-- ✖ Red X if not memorized -->
+                    {% endif %}
+                </span>
+                <a href="/memorise/{{ surah.surahId }}?startAyah={{ ayah.ayahNumber }}" class="btn btn-success btn-sm memorize-btn">Memorize</a>
+            </div>
         </li>
         {% endfor %}
     </ul>
 
     <div class="mt-4 d-flex justify-content-between">
-        <a href="/memorise/{{ surah.surahId }}" class="btn btn-success">Start Memorising</a>
+        <a href="/memorise/{{ surah.surahId }}" class="btn btn-success">Start Memorising from Beginning</a>
         <a href="/surahs" class="btn btn-secondary">Back to Surah List</a>
     </div>
 </div>
