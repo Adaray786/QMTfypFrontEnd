@@ -10,17 +10,14 @@
         <h3> Dashboard </h3>
 
         <div class="row">
-            <!-- Left Column - Buttons -->
             <div class="col-md-6">
                 <div class="d-grid gap-3">
                     <a href="/surahs" class="btn btn-primary text-white btn-lg">View Surahs</a>
                     <a href="/friends" class="btn btn-success text-white btn-lg">Friends</a>
                 </div>
             </div>
-
-            <!-- Right Column - Progress Chart -->
             <div class="col-md-6">
-                <div class="card" style="background-color: #004631; border-radius: 20px; opacity: 0.9;">
+                <div class="card mb-4" style="background-color: #004631; border-radius: 20px; opacity: 0.9;">
                     <div class="card-body">
                         <h5 class="card-title text-white">Your Qur'an Memorisation Progress</h5>
                         <div class="chart-container" style="position: relative; height:200px; width:200px; margin: 0 auto; border: 3px solid black; border-radius: 15px; overflow: hidden; background-color: rgba(0, 70, 49, 0.2);">
@@ -28,6 +25,37 @@
                         </div>
                         <div id="progressStats" class="text-center mt-3 text-white">
                             <h6>Total Surahs Memorized: <span id="memorizedCount">0</span>/114</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="background-color: #004631; border-radius: 20px; opacity: 0.9;">
+                    <div class="card-body">
+                        <h5 class="card-title text-white">Leaderboard</h5>
+                        <div class="table-responsive" style="background-color: rgba(255, 255, 255, 0.9); border-radius: 15px; padding: 15px;">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Username</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in leaderboardEntries %}
+                                    <tr {% if entry.isCurrentUser %}class="table-primary"{% endif %}>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            {% if entry.isCurrentUser %}
+                                                {{ user.userId }} (You)
+                                            {% else %}
+                                                {{ entry.username }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ entry.score }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -113,23 +141,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 10,
-                                font: {
-                                    size: 10
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.raw.toFixed(1)}%`;
-                                }
-                            }
+                            display: false
                         }
                     }
                 }
