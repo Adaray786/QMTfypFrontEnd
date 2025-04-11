@@ -8,6 +8,7 @@ import { MemoriseController } from "./controller/MemoriseController";
 import { FriendController } from "./controller/FriendController";
 import { ChallengeController } from "./controller/ChallengeController";
 import { SendChallengeController } from "./controller/SendChallengeController";
+import { RecommendationController } from "./controller/RecommendationController";
 
 import { role, login } from "./middleware/auth";
 
@@ -32,6 +33,8 @@ router.post("/send", login, FriendController.sendFriendRequest);
 router.post("/accept", login, FriendController.acceptFriendRequest);
 router.post("/reject", login, FriendController.rejectFriendRequest);
 router.post("/remove", login, FriendController.removeFriend);
+router.get('/recommendations', login, RecommendationController.getRecommendations);
+router.post('/recommendations/:surahId/mark-revised', login, RecommendationController.markAsRevised);
 
 router.get('/logout', LoginController.logOut)
 

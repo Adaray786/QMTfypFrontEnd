@@ -44,6 +44,10 @@
     // Load friends and surahs when page loads
     document.addEventListener('DOMContentLoaded', async () => {
         try {
+            // Get surahId from URL if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const preSelectedSurahId = urlParams.get('surahId');
+
             // Load friends
             const friendsResponse = await fetch(BACKURL + '/api/friends/', {
                 headers: {
@@ -80,7 +84,9 @@
                 if (surahs.length > 0) {
                     surahSelect.innerHTML = '<option value="">Choose a surah...</option>' + 
                         surahs.map(surah => 
-                            `<option value="${surah.surahId}">${surah.surahId}. ${surah.surahNameEnglish} (${surah.surahNameArabic})</option>`
+                            `<option value="${surah.surahId}" ${preSelectedSurahId && surah.surahId == preSelectedSurahId ? 'selected' : ''}>
+                                ${surah.surahId}. ${surah.surahNameEnglish} (${surah.surahNameArabic})
+                            </option>`
                         ).join('');
                 } else {
                     surahSelect.innerHTML = '<option value="">No surahs found</option>';
