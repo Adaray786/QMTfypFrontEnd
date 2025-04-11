@@ -15,6 +15,7 @@ export class SurahDetailsController {
             });
 
             let memorizedAyahs: number[] = [];
+            let memorizedSurahs: number[] = [];
             let userScore = scoreResponse.data;
 
             if (userId) {
@@ -23,18 +24,29 @@ export class SurahDetailsController {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                // Ensure data is an array before filtering
-                const progressData = Array.isArray(ayahProgressResponse.data) ? ayahProgressResponse.data : [];
+                // Fetch user's memorized Surahs
+                const surahProgressResponse = await axios.get(process.env.BACK_URL + `/api/surahProgress/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-                memorizedAyahs = progressData
+                // Ensure data is an array before filtering
+                const ayahProgressData = Array.isArray(ayahProgressResponse.data) ? ayahProgressResponse.data : [];
+                const surahProgressData = Array.isArray(surahProgressResponse.data) ? surahProgressResponse.data : [];
+
+                memorizedAyahs = ayahProgressData
                     .filter((progress: any) => progress.memorized)
                     .map((progress: any) => progress.ayahId);
+
+                memorizedSurahs = surahProgressData
+                    .filter((progress: any) => progress.memorized)
+                    .map((progress: any) => progress.surahId);
             }
 
             res.render("surah", { 
                 surah: surahResponse.data, 
                 ayahs: ayahResponse.data, 
                 memorizedAyahs,
+                memorizedSurahs,
                 user: req.session.user,
                 userScore
             });

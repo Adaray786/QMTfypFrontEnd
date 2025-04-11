@@ -1,0 +1,183 @@
+{% extends "templates/main.html" %}
+
+{% block pageTitle %}Recommendations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Your Recommendations</h2>
+
+    <!-- Revision Recommendations Section -->
+    <div class="card mb-4" id="revision-section">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Surahs to Revise</h3>
+            <button class="btn btn-sm btn-outline-dark refresh-revision">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        <div class="card-body revision-body">
+            <div class="text-center">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading revision recommendations...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Surah Recommendations Section -->
+    <div class="card" id="new-section">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">New Surahs to Memorize</h3>
+            <button class="btn btn-sm btn-outline-light refresh-new">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        <div class="card-body new-body">
+            <div class="text-center">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading new surah recommendations...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BACKURL = {{ BACKURL | dump | safe }};
+    const token = {{ token | dump | safe }};
+
+    // Function to show loading state
+    function showLoading(type) {
+        const container = document.querySelector(`.${type}-body`);
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-${type === 'revision' ? 'warning' : 'success'}" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading ${type} recommendations...</p>
+                </div>
+            `;
+        }
+    }
+
+    // Function to fetch and update recommendations
+    async function fetchRecommendations(type) {
+        showLoading(type);
+        try {
+            const response = await fetch(`${BACKURL}/api/recommendations/${type}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${type} recommendations`);
+            }
+
+            const recommendations = await response.json();
+            const container = document.querySelector(`.${type}-body`);
+
+            if (!container) {
+                console.error(`Container not found for ${type} recommendations`);
+                return;
+            }
+
+            if (recommendations.length === 0) {
+                container.innerHTML = `<p class="text-muted">No ${type === 'revision' ? 'surahs need revision' : 'new surahs to memorize'} at the moment.</p>`;
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            recommendations.forEach(rec => {
+                if (type === 'revision') {
+                    html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">${rec.surahName}</h5>
+                                <p class="mb-1 text-muted">${rec.description}</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a href="/memorise/${rec.surahId}" class="btn btn-primary me-2">Revise</a>
+                                <button class="btn btn-success mark-revised" data-surah-id="${rec.surahId}">
+                                    Mark as Revised
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">${rec.surahName}</h5>
+                                <p class="mb-1 text-muted">${rec.description}</p>
+                            </div>
+                            <a href="/memorise/${rec.surahId}" class="btn btn-primary">Start Memorizing</a>
+                        </div>
+                    `;
+                }
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Reattach event listeners for mark as revised buttons
+            if (type === 'revision') {
+                attachMarkAsRevisedListeners();
+            }
+        } catch (error) {
+            console.error(`Error fetching ${type} recommendations:`, error);
+            const container = document.querySelector(`.${type}-body`);
+            if (container) {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        Failed to load ${type} recommendations. Please try refreshing.
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Function to attach event listeners to mark as revised buttons
+    function attachMarkAsRevisedListeners() {
+        document.querySelectorAll('.mark-revised').forEach(button => {
+            button.addEventListener('click', async function() {
+                const surahId = this.dataset.surahId;
+                try {
+                    const response = await fetch(`${BACKURL}/api/recommendations/${surahId}/mark-revised`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Remove the item from the list
+                        this.closest('.list-group-item').remove();
+                        
+                        // If no items left, show message
+                        if (document.querySelectorAll('.mark-revised').length === 0) {
+                            document.querySelector('.revision-body').innerHTML = '<p class="text-muted">No surahs need revision at the moment.</p>';
+                        }
+                    } else {
+                        alert('Failed to mark surah as revised');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to mark surah as revised');
+                }
+            });
+        });
+    }
+
+    // Add event listeners to refresh buttons
+    document.querySelector('.refresh-revision').addEventListener('click', () => fetchRecommendations('revision'));
+    document.querySelector('.refresh-new').addEventListener('click', () => fetchRecommendations('new'));
+
+    // Load both sets of recommendations when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchRecommendations('revision');
+        fetchRecommendations('new');
+    });
+</script>
+{% endblock %} 
