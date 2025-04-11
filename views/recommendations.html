@@ -95,8 +95,7 @@
                     html += `
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <h5 class="mb-1">${rec.surahName}</h5>
-                                <p class="mb-1 text-muted">${rec.description}</p>
+                                <h5 class="mb-1">${rec.surahId} &nbsp;&nbsp; ${rec.surahName}</h5>
                             </div>
                             <div class="d-flex align-items-center">
                                 <a href="/memorise/${rec.surahId}" class="btn btn-primary me-2">Revise</a>
@@ -110,8 +109,7 @@
                     html += `
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <h5 class="mb-1">${rec.surahName}</h5>
-                                <p class="mb-1 text-muted">${rec.description}</p>
+                                <h5 class="mb-1">${rec.surahId} &nbsp;&nbsp; ${rec.surahName}</h5>
                             </div>
                             <a href="/memorise/${rec.surahId}" class="btn btn-primary">Start Memorizing</a>
                         </div>
@@ -143,8 +141,9 @@
         document.querySelectorAll('.mark-revised').forEach(button => {
             button.addEventListener('click', async function() {
                 const surahId = this.dataset.surahId;
+                const userId = {{ user.userId | dump | safe }}; // Get the current user's ID
                 try {
-                    const response = await fetch(`${BACKURL}/api/recommendations/${surahId}/mark-revised`, {
+                    const response = await fetch(`${BACKURL}/api/recommendations/${userId}/mark-revised/${surahId}`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -160,7 +159,8 @@
                             document.querySelector('.revision-body').innerHTML = '<p class="text-muted">No surahs need revision at the moment.</p>';
                         }
                     } else {
-                        alert('Failed to mark surah as revised');
+                        const errorData = await response.json();
+                        alert(errorData.entity || 'Failed to mark surah as revised');
                     }
                 } catch (error) {
                     console.error('Error:', error);
