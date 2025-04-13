@@ -401,13 +401,11 @@
 
             if (allAyahsMemorized) {
                 const progressData = {
-                    progressId: null,  
                     userId: userId,
-                    surahId: surahId,
-                    memorized: true  
+                    surahId: surahId
                 };
 
-                const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {  
+                const response = await fetch(BACKURL + `/api/surahProgress/upsert`, {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -417,7 +415,9 @@
                 });
 
                 if (!response.ok) {
-                    console.error("Failed to update Surah progress");
+                    const errorData = await response.json();
+                    console.error("Failed to update Surah progress:", errorData);
+                    throw new Error(errorData.entity || "Failed to update Surah progress");
                 } else {
                     console.log(`Successfully updated progress for Surah ID ${surahId}`);
                 }
@@ -426,6 +426,12 @@
             }
         } catch (error) {
             console.error("Error updating Surah progress:", error);
+            // Show error message to user
+            const messageElement = document.getElementById("message");
+            if (messageElement) {
+                messageElement.innerText = `Error: ${error.message}`;
+                messageElement.style.color = "red";
+            }
         }
     }
 
