@@ -1,6 +1,6 @@
 {% extends "templates/main.html" %}
 
-{% block pageTitle %}{{ surah.surahNameEnglish }}{% endblock %}
+{% block pageTitle %} Surah {{ surah.surahNameEnglish }}{% endblock %}
 
 {% block content %}
 <style>
@@ -17,7 +17,7 @@
 </style>
 
 <div class="container">
-    <h2>{{ surah.surahNameEnglish }} ({{ surah.surahNameArabic }})</h2>
+    <h2>{{ surah.surahNameArabic }}</h2>
     <p><strong>Total Ayahs:</strong> {{ surah.totalAyahs }}</p>
 
     <h3>Ayahs</h3>
@@ -25,7 +25,7 @@
         {% for ayah in ayahs %}
         <li class="list-group-item ayah-item d-flex justify-content-between align-items-center">
             <span>
-                <strong>Ayah {{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
+                <strong>{{ ayah.ayahNumber }}:</strong> {{ ayah.arabicText }}
             </span>
             <div class="d-flex align-items-center">
                 <a href="/memorise/{{ surah.surahId }}?startAyah={{ ayah.ayahNumber }}" class="btn btn-success btn-sm memorize-btn me-3">Memorize</a>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="mt-4 d-flex justify-content-between">
-        <a href="/memorise/{{ surah.surahId }}" class="btn btn-success">Start Memorising from Beginning</a>
+        <a href="/memorise/{{ surah.surahId }}" class="btn btn-success">Start Memorising</a>
         <a href="/surahs" class="btn btn-secondary">Back to Surah List</a>
     </div>
 </div>
